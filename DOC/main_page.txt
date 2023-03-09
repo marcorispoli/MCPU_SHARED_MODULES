@@ -1,0 +1,10 @@
+/*!
+ * \mainpage
+ *
+ * # GENERAL OVERVIEW
+ * 
+ * This documentation describes the shared modules that can be 
+ * used along the MAIN CPU software implementation. 
+ *
+ *
+ */

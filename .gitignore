@@ -1,0 +1,9 @@
+*.exe
+*.o
+*.debug
+*.release
+*.Debug
+*.Release
+**/html
+*.html
+*.lnk
