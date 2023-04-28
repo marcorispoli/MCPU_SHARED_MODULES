@@ -24,6 +24,7 @@
 
 
 #include <QtCore>
+#include "can_bootloader_protocol.h"
 
 /**
  * @brief The canDeviceProtocolFrame class
@@ -196,7 +197,7 @@ public:
  * - Provides the function to execute remote commands;
  *
  */
-class canDeviceProtocol: public QObject
+class canDeviceProtocol: public canBootloaderProtocol
 {
     Q_OBJECT
 
@@ -205,32 +206,33 @@ public:
     explicit canDeviceProtocol(uchar devid, const char* ip_driver, const ushort port_driver);
     ~canDeviceProtocol();
 
-     static const unsigned short CAN_ID_DEVICE_BASE_ADDRESS = 0x200; //!< This is the Point to Point protocol device Base address
+     static const unsigned short CAN_PROTOCOL_DEVICE_BASE_ADDRESS = 0x200; //!< This is the Point to Point protocol device Base address
      static const unsigned short CAN_RXTX_TMO = 100; //!< This defines the maximum reception waiting time in ms
 
 signals:
-    void txToCan(ushort canId, QByteArray data); //!< Sends Can data frame to the canDriver
-    void dataReceivedFromCan(ushort canId, QByteArray data); //!< Emitted when a frame is received for debug purpose
+    void txToDeviceCan(ushort canId, QByteArray data); //!< Sends Can data frame to the canDriver
+    void dataReceivedFromDeviceCan(ushort canId, QByteArray data); //!< Emitted when a frame is received for debug purpose
 
 protected:
-    bool  accessRegister(canDeviceProtocolFrame::CAN_FRAME_COMMANDS_t regtype, uchar idx=0, uchar d0=0, uchar d1=0, uchar d2=0, uchar d3=0);
-    bool  inline abortCommand(void){return accessRegister(canDeviceProtocolFrame::COMMAND_EXEC, canDeviceProtocolFrame::CAN_ABORT_COMMAND);};
-    QString getFrameErrorStr(void);
+    bool  deviceAccessRegister(canDeviceProtocolFrame::CAN_FRAME_COMMANDS_t regtype, uchar idx=0, uchar d0=0, uchar d1=0, uchar d2=0, uchar d3=0);
+    bool  inline deviceAbortCommand(void){return deviceAccessRegister(canDeviceProtocolFrame::COMMAND_EXEC, canDeviceProtocolFrame::CAN_ABORT_COMMAND);};
+    QString getDeviceFrameErrorStr(void);
 
-    canDeviceProtocolFrame::CAN_REGISTER_t           revisionRegister; //!< Protocol special revision register
-    canDeviceProtocolFrame::CAN_REGISTER_t           errorsRegister;   //!< Protocol special errors register
-    canDeviceProtocolFrame::CAN_COMMAND_t            commandRegister;  //!< Protocol special command register
-    QList<canDeviceProtocolFrame::CAN_REGISTER_t>    statusRegisters;  //!< Array of the device STATUS register
-    QList<canDeviceProtocolFrame::CAN_REGISTER_t>    dataRegisters;    //!< Array of the device DATA register
-    QList<canDeviceProtocolFrame::CAN_REGISTER_t>    paramRegisters;   //!< Array of the device PARAMETER register
+    canDeviceProtocolFrame::CAN_REGISTER_t           deviceRevisionRegister; //!< Protocol special revision register
+    canDeviceProtocolFrame::CAN_REGISTER_t           deviceErrorsRegister;   //!< Protocol special errors register
+    canDeviceProtocolFrame::CAN_COMMAND_t            deviceCommandRegister;  //!< Protocol special command register
+    QList<canDeviceProtocolFrame::CAN_REGISTER_t>    deviceStatusRegisters;  //!< Array of the device STATUS register
+    QList<canDeviceProtocolFrame::CAN_REGISTER_t>    deviceDataRegisters;    //!< Array of the device DATA register
+    QList<canDeviceProtocolFrame::CAN_REGISTER_t>    deviceParamRegisters;   //!< Array of the device PARAMETER register
 
-    bool inline isCommunicationPending(void) {return busy;} //!< Test if the last can rx/tx is still pending
-    bool inline isCommunicationOk(void) {return rxOk;} //!< Test if the last can rx/tx is successfully concluded
+    bool inline isDeviceCommunicationPending(void) {return busy;} //!< Test if the last can rx/tx is still pending
+    bool inline isDeviceCommunicationOk(void) {return rxOk;} //!< Test if the last can rx/tx is successfully concluded
 
 private slots:
-   void rxFromCan(ushort canId, QByteArray data);//!< Receive Can data frame from the canDriver  
-   void timerEvent(QTimerEvent *event);         //!< Timer event used for the rx/tx timeout
-protected slots:
+   void rxFromDeviceCan(ushort canId, QByteArray data);//!< Receive Can data frame from the canDriver
+   void deviceTmoEvent(void);         //!< Timer event used for the rx/tx timeout
+
+
 
 
 private:
@@ -249,9 +251,8 @@ private:
         uchar frame_code:1;
         uchar spare:2;
     }frameError;            //!< In case of error frame, this is the error cause
-    int  tmoTimer;
 
-
+     QTimer deviceTmo;
 
 };
 

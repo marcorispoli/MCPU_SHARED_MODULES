@@ -2,7 +2,6 @@
 #include "can_device_protocol.h"
 #include "canclient.h"
 
-static canClient* pCan = nullptr;
 
 /**
  * This is the class constructor.
@@ -14,21 +13,23 @@ static canClient* pCan = nullptr;
  * @param port_driver the port of the CAN Driver application
  *
  */
-canDeviceProtocol::canDeviceProtocol(uchar devid, const char* ip_driver, const ushort port_driver)
+canDeviceProtocol::canDeviceProtocol(uchar devid, const char* ip_driver, const ushort port_driver):canBootloaderProtocol(Application::DEVICE_ID, Application::IP_CAN_ADDRESS, Application::CAN_PORT)
 {
     // Create the Can Client Object to communicate with the can driver process
-    deviceID = canDeviceProtocol::CAN_ID_DEVICE_BASE_ADDRESS + devid ;
-    pCan = new canClient(0xFFF, deviceID, ip_driver, port_driver);
-
+    deviceID = canDeviceProtocol::CAN_PROTOCOL_DEVICE_BASE_ADDRESS + devid ;
 
     // Activation of the communicaitone with the CAN DRIVER SERVER
-    connect(pCan, SIGNAL(rxFromCan(ushort , QByteArray )), this, SLOT(rxFromCan(ushort , QByteArray )), Qt::QueuedConnection);
-    connect(this,SIGNAL(txToCan(ushort , QByteArray )), pCan,SLOT(txToCanData(ushort , QByteArray )), Qt::QueuedConnection);
+    canClient* pCan = new canClient(0xFFF, deviceID, ip_driver, port_driver);
+    connect(pCan, SIGNAL(rxFromCan(ushort , QByteArray )), this, SLOT(rxFromDeviceCan(ushort , QByteArray )), Qt::QueuedConnection);
+    connect(this,SIGNAL(txToDeviceCan(ushort , QByteArray )), pCan,SLOT(txToCanData(ushort , QByteArray )), Qt::QueuedConnection);
     pCan->ConnectToCanServer();
+
 
     frame_sequence = 1;
     busy = false;
-    tmoTimer = 0;
+    connect(&deviceTmo, SIGNAL(timeout()), this, SLOT(deviceTmoEvent()), Qt::UniqueConnection);
+
+
 }
 
 canDeviceProtocol::~canDeviceProtocol()
@@ -40,7 +41,7 @@ canDeviceProtocol::~canDeviceProtocol()
  * @brief This function returns the current detected frame error
  * @return the frame error readable string
  */
-QString canDeviceProtocol::getFrameErrorStr(void){
+QString canDeviceProtocol::getDeviceFrameErrorStr(void){
     if(frameError.tmo) return "TIMEOUT FRAME";
     if(frameError.seq) return "SEQ ERR FRAME";
     if(frameError.crc) return "CRC ERR FRAME";
@@ -65,15 +66,22 @@ QString canDeviceProtocol::getFrameErrorStr(void){
  * @param devId received device ID
  * @param data CAN data frame to be processed
  */
-void canDeviceProtocol::rxFromCan(ushort devId, QByteArray data){
-    emit dataReceivedFromCan(devId,data); // For debug
+void canDeviceProtocol::rxFromDeviceCan(ushort devId, QByteArray data){
+    emit dataReceivedFromDeviceCan(devId,data); // For debug
 
     // No pending reception
     if(!busy) return;
 
     // Stops the timeout
-    if(tmoTimer) killTimer(tmoTimer);
-    tmoTimer = 0;
+    deviceTmo.stop();
+
+    // Timeout signaled by the client
+    if(devId==0){
+        busy = false;
+        rxOk = false;
+        frameError.tmo = 1;
+        return;
+    }
 
     // Device ID not matching the expected
     if(devId != deviceID) {
@@ -110,20 +118,18 @@ void canDeviceProtocol::rxFromCan(ushort devId, QByteArray data){
  *
  * @param event
  */
-void canDeviceProtocol::timerEvent(QTimerEvent *event){
-    if(event->timerId() == tmoTimer){
-        killTimer(tmoTimer);
-        tmoTimer = 0;
-        if(!busy) return;
+void canDeviceProtocol::deviceTmoEvent(void){
+    deviceTmo.stop();
+    if(!busy) return;
 
-        // Timeout Event
-        qDebug() << "TIMEOUT EVENT";
+    // Timeout Event
+    qDebug() << "TIMEOUT CLIENT EVENT";
 
-        busy = false;
-        rxOk = false;
-        frameError.tmo = 1;
-        return;
-    }
+    busy = false;
+    rxOk = false;
+    frameError.tmo = 1;
+    return;
+
 }
 
 
@@ -141,8 +147,7 @@ void canDeviceProtocol::timerEvent(QTimerEvent *event){
  *
  * @return true if the frame is correctly sent to the CAN bus
  */
-bool  canDeviceProtocol::accessRegister(canDeviceProtocolFrame::CAN_FRAME_COMMANDS_t regtype, uchar idx, uchar d0, uchar d1, uchar d2, uchar d3){
-    if(!pCan) return false;
+bool  canDeviceProtocol::deviceAccessRegister(canDeviceProtocolFrame::CAN_FRAME_COMMANDS_t regtype, uchar idx, uchar d0, uchar d1, uchar d2, uchar d3){
     if(busy) return false;
     canDeviceProtocolFrame::CAN_FRAME_CONTENT_t content;
 
@@ -165,9 +170,8 @@ bool  canDeviceProtocol::accessRegister(canDeviceProtocolFrame::CAN_FRAME_COMMAN
     (*(uchar*) &frameError) = 0;
 
 
-    emit txToCan(deviceID, canDeviceProtocolFrame::toCanData(&content));
-    if(tmoTimer) killTimer(tmoTimer);
-    tmoTimer = startTimer(20);
+    emit txToDeviceCan(deviceID, canDeviceProtocolFrame::toCanData(&content));
+    deviceTmo.stop();
     return true;
 }
 
@@ -184,77 +188,77 @@ void canDeviceProtocol::receptionEvent( canDeviceProtocolFrame::CAN_FRAME_CONTEN
     // Evaluate the operation
     switch(pContent->frame_type){
         case canDeviceProtocolFrame::READ_REVISION:
-            memcpy(revisionRegister.d, pContent->d, 4);
-            revisionRegister.valid = true;
+            memcpy(deviceRevisionRegister.d, pContent->d, 4);
+            deviceRevisionRegister.valid = true;
             break;
         case canDeviceProtocolFrame::READ_ERRORS:
-            memcpy(errorsRegister.d, pContent->d, 4);
-            errorsRegister.valid = true;
+            memcpy(deviceErrorsRegister.d, pContent->d, 4);
+            deviceErrorsRegister.valid = true;
             break;
 
         case canDeviceProtocolFrame::COMMAND_EXEC:
         case canDeviceProtocolFrame::READ_COMMAND:
-            commandRegister.command = pContent->idx;
-            commandRegister.status =  pContent->d[0];
-            commandRegister.b0 =      pContent->d[1];
-            commandRegister.b1 =      pContent->d[2];
-            commandRegister.error =   pContent->d[3];
-            commandRegister.valid = true;
+            deviceCommandRegister.command = pContent->idx;
+            deviceCommandRegister.status =  pContent->d[0];
+            deviceCommandRegister.b0 =      pContent->d[1];
+            deviceCommandRegister.b1 =      pContent->d[2];
+            deviceCommandRegister.error =   pContent->d[3];
+            deviceCommandRegister.valid = true;
             break;
         case canDeviceProtocolFrame::READ_STATUS:
-            if(pContent->idx >= statusRegisters.size() ){
+            if(pContent->idx >= deviceStatusRegisters.size() ){
                 busy = false;
                 rxOk = false;
                 frameError.idx = 1;
                 return;
             }
 
-            memcpy(statusRegisters[pContent->idx].d, pContent->d,4);
-            statusRegisters[pContent->idx].valid = true;
+            memcpy(deviceStatusRegisters[pContent->idx].d, pContent->d,4);
+            deviceStatusRegisters[pContent->idx].valid = true;
             break;
         case canDeviceProtocolFrame::READ_DATA:
-            if(pContent->idx >= dataRegisters.size() ){
+            if(pContent->idx >= deviceDataRegisters.size() ){
                 busy = false;
                 rxOk = false;
                 frameError.idx = 1;
                 return;
             }
 
-            memcpy(dataRegisters[pContent->idx].d, pContent->d,4);
-            dataRegisters[pContent->idx].valid = true;
+            memcpy(deviceDataRegisters[pContent->idx].d, pContent->d,4);
+            deviceDataRegisters[pContent->idx].valid = true;
             break;
         case canDeviceProtocolFrame::READ_PARAM:
-            if(pContent->idx >= paramRegisters.size() ){
+            if(pContent->idx >= deviceParamRegisters.size() ){
                 busy = false;
                 rxOk = false;
                 frameError.idx = 1;
                 return;
             }
 
-            memcpy(paramRegisters[pContent->idx].d, pContent->d,4);
-            paramRegisters[pContent->idx].valid = true;
+            memcpy(deviceParamRegisters[pContent->idx].d, pContent->d,4);
+            deviceParamRegisters[pContent->idx].valid = true;
             break;
         case canDeviceProtocolFrame::WRITE_DATA:
-            if(pContent->idx >= dataRegisters.size() ){
+            if(pContent->idx >= deviceDataRegisters.size() ){
                 busy = false;
                 rxOk = false;
                 frameError.idx = 1;
                 return;
             }
 
-            memcpy(dataRegisters[pContent->idx].d, pContent->d,4);
-            dataRegisters[pContent->idx].valid = true;
+            memcpy(deviceDataRegisters[pContent->idx].d, pContent->d,4);
+            deviceDataRegisters[pContent->idx].valid = true;
             break;
         case canDeviceProtocolFrame::WRITE_PARAM:
-            if(pContent->idx >= paramRegisters.size() ){
+            if(pContent->idx >= deviceParamRegisters.size() ){
                 busy = false;
                 rxOk = false;
                 frameError.idx = 1;
                 return;
             }
 
-            memcpy(paramRegisters[pContent->idx].d, pContent->d,4);
-            paramRegisters[pContent->idx].valid = true;
+            memcpy(deviceParamRegisters[pContent->idx].d, pContent->d,4);
+            deviceParamRegisters[pContent->idx].valid = true;
             break;
 
         case canDeviceProtocolFrame::STORE_PARAMS:
