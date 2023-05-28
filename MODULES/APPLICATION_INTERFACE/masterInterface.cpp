@@ -74,7 +74,9 @@ void masterInterface::socketConnected()
 {
     // Connessione avvenuta
     connectionStatus=true;
+    revision_is_valid = false;
     socket->setSocketOption(QAbstractSocket::LowDelayOption,1);
+    handleServerConnections(connectionStatus);
 
 }
 
@@ -86,8 +88,9 @@ void masterInterface::socketConnected()
 void masterInterface::socketDisconnected()
 {
     connectionStatus=false;
+    revision_is_valid = false;
     socket->connectToHost(serverip, serverport);
-
+    handleServerConnections(connectionStatus);
 }
 
 /**
@@ -167,9 +170,6 @@ QList<QString> masterInterface::getProtocolFrame(QByteArray* data){
 }
 
 
-void masterInterface::handleReceivedEvent(QList<QString>* event_content){
-    return;
-}
 
 void masterInterface::handleSocketFrame(QByteArray* data){
 
@@ -177,12 +177,15 @@ void masterInterface::handleSocketFrame(QByteArray* data){
     QList<QString> frame_content =  getProtocolFrame(data);
     if(frame_content.size() < 3) return;
 
+
+
     if(frame_content.at(0) == "A") {
          if(frame_content.at(1).toUShort() != txseq) return;
          if(rxack) return;
 
          ackparam = frame_content;
          rxack = true;
+         handleReceivedAck(&frame_content);
          return;
     }else if(frame_content.at(0) == "E") {
         handleReceivedEvent(&frame_content);
@@ -256,8 +259,26 @@ void masterInterface::txCommand(QString command, QList<QString>* params)
     buffer.append('\n');
     buffer.append('\r');
 
+    txseq = loc_txseq++;
+    rxack = false;
     socket->write(buffer);
     socket->waitForBytesWritten(5000);
 
 
+}
+
+void masterInterface::handleReceivedEvent(QList<QString>* event_content){
+    return;
+}
+
+void masterInterface::handleReceivedAck(QList<QString>* ack_content){
+
+
+    return;
+}
+
+void masterInterface::handleServerConnections(bool status){
+
+
+    return;
 }
