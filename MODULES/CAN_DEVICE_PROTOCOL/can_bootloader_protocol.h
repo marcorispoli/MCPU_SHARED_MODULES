@@ -76,7 +76,7 @@ public:
      }CAN_BOOTLOADER_PROCSTAT_t;
 
 
-     bool  sendCommand(canBootloaderProtocol::CAN_BOOTLOADER_COMMANDS_t cmd, uchar d0, uchar d1, uchar d2, uchar d3, uchar d4, uchar d5, uchar d6);
+
 
 signals:
     void txToBootloader(ushort canId, QByteArray data); //!< Sends Can data frame to the canDriver
@@ -88,8 +88,8 @@ protected:
     bool inline isBootloaderCommunicationOk(void) {return rxOk;} //!< Test if the last can rx/tx is successfully concluded
 
 
-    bool inline bootloaderGetInfo(void) {sendCommand(BOOTLOADER_GET_INFO,0,0,0,0,0,0,0);}
-    bool inline bootloaderStart(void) {sendCommand(BOOTLOADER_START,0,0,0,0,0,0,0);}
+    bool inline bootloaderGetInfo(void) {return sendCommand(BOOTLOADER_GET_INFO,0,0,0,0,0,0,0);}
+    bool inline bootloaderStart(void) {return sendCommand(BOOTLOADER_START,0,0,0,0,0,0,0);}
 
     uint8_t inline bootloaderGetCommandResult(uint8_t index){return command_result.at(index);}
 
@@ -136,6 +136,7 @@ private:
 
     QTimer bootloaderTmo;
 
+     bool  sendCommand(canBootloaderProtocol::CAN_BOOTLOADER_COMMANDS_t cmd, uchar d0, uchar d1, uchar d2, uchar d3, uchar d4, uchar d5, uchar d6);
 };
 
 

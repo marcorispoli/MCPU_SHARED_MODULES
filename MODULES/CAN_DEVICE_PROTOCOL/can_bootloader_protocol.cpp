@@ -126,8 +126,12 @@ void canBootloaderProtocol::bootloaderTmoEvent(void){
 
 
 bool  canBootloaderProtocol::sendCommand(canBootloaderProtocol::CAN_BOOTLOADER_COMMANDS_t cmd, uchar d0, uchar d1, uchar d2, uchar d3, uchar d4, uchar d5, uchar d6){
+return false;
     if(busy) return false;
+
+
     QByteArray frame;
+
     frame.append((unsigned char) cmd);
     frame.append(d0);
     frame.append(d1);
