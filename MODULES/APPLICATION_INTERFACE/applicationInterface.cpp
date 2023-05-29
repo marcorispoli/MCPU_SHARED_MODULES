@@ -211,7 +211,7 @@ void applicationInterface::incomingConnection(qintptr socketDescriptor)
  * - params: the list of optional parameters to be sent to Client.
  *
  */
-void applicationInterface::sendAck(ushort id, ushort seq,  uint errcode, QList<QString>* params){
+void applicationInterface::sendAck(ushort id,   ushort seq,  QString command, uint errcode, QList<QString>* params){
     QByteArray buffer;
 
     // Creates the Acknowledge frame
@@ -219,6 +219,8 @@ void applicationInterface::sendAck(ushort id, ushort seq,  uint errcode, QList<Q
     buffer.append('A');
     buffer.append(' ');
     buffer.append(QString("%1").arg(seq).toLatin1());
+    buffer.append(' ');
+    buffer.append(command.toLatin1());
     buffer.append(' ');
     if(errcode) buffer.append("NOK");
     else buffer.append("OK");
@@ -364,7 +366,7 @@ void applicationInterface::receivedCommandSlot(ushort id, QByteArray data){
 
     QList<QString> answer;
     uint errcode = handleReceivedCommand(&command, &answer);
-    sendAck(id, seq, errcode, &answer);
+    sendAck(id, seq, command.at(2), errcode, &answer);
 
 }
 

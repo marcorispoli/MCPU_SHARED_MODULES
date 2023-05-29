@@ -22,19 +22,37 @@ public:
     explicit masterInterface(QString IP, int PORT);
     ~masterInterface();
 
-    const unsigned char ACK_ERR_CODE = 3;
-    const unsigned char ACK_FIRST_PARAM_CODE = 4;
-    const unsigned char EVENT_CODE = 1;
-    const unsigned char EVENT_FIRST_PARAM_CODE = 2;
+    // Protocol position definition
+    static const unsigned char ACK_SEQ_CODE = 1;
+    static const unsigned char ACK_CMD_CODE = 2;
+    static const unsigned char ACK_ERR_CODE = 4;
+    static const unsigned char ACK_FIRST_PARAM_CODE = 5;
+
+    static const unsigned char EVENT_CMD = 1;
+    static const unsigned char EVENT_FIRST_PARAM_CODE = 2;
 
     void Start(void);
     virtual void handleReceivedEvent(QList<QString>* event_content);
-    void txCommand(QString command, QList<QString>* params);
+    virtual void handleReceivedAck(QList<QString>* ack_content);
+    virtual void handleServerConnections(bool status);
+
+    void txCommand(QString command, QList<QString>* params = nullptr);
 
     _inline bool isConnected(void){ return connectionStatus;};
     _inline bool isAck(void){ return rxack;};
     _inline QList<QString> getAckFrame(void){ return ackparam;};
 
+    _inline bool isValidRevision(void){ return revision_is_valid;};
+    _inline uint getMajRevision(void){ return maj_rev;};
+    _inline uint getMinRevision(void){ return min_rev;};
+    _inline uint getSubRevision(void){ return sub_rev;};
+    _inline uint setRevision(uint maj, uint min, uint sub){maj_rev = maj; min_rev = min; sub_rev = sub; revision_is_valid = true; };
+
+protected:
+    bool revision_is_valid;
+    uint maj_rev;
+    uint min_rev;
+    uint sub_rev;
 
 private slots:
     void socketRxData(); // Ricezione dati da socket
@@ -49,6 +67,7 @@ private:
     bool connectionStatus;
     bool connectionAttempt; // E' in corso un tentativo di connessione
 
+    // Protocol data exchange variables
     uint txseq;
     uint rxseq;
     bool rxack;

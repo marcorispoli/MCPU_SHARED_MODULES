@@ -141,7 +141,7 @@ private:
     quint16             localport;     //!< Port of the local server
     ushort              idseq;         //!< Id counter, to assign a unique ID to a client
 
-    void sendAck(ushort id, ushort seq, uint code,QList<QString>*  data);  //!< Helper function to send an Answer frame to Gantry
+    void sendAck(ushort id,  ushort seq, QString command, uint errcode,QList<QString>*  data);  //!< Helper function to send an Answer frame to Gantry
     QList<QString> getProtocolFrame(QByteArray* data);  //!< Extract the data content from a received frame
 
 };
