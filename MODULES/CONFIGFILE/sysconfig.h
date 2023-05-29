@@ -13,34 +13,41 @@ class sysConfig : public configFile
     #define SYS_CONFIG_FILENAME     "C:\\OEM\\Gantry\\Config\\SysConfig.cnf" // This is the configuration file name and path
 
     // This section defines labels helping the param identification along the application
-    #define SYS_LOCALHOST_PARAM         "LOCALHOST"
-    #define SYS_AWSPORT_PARAM           "AWS_PORT"
-    #define SYS_CAN_PORT_PARAM          "CAN_PORT"
-    #define SYS_GENERATOR_PORT_PARAM    "GENERATOR_PORT"
-    #define SYS_POWERSERVICE_PORT_PARAM "POWER_SERVICE_PORT"
-    #define SYS_FILTER_PORT_PARAM       "FILTER_PORT"
-    #define SYS_COLLIMATOR_PORT_PARAM   "COLLIMATOR_PORT"
-    #define SYS_COMPRESSOR_PORT_PARAM   "COMPRESSOR_PORT"
-    #define SYS_POTTER_PORT_PARAM       "POTTER_PORT"
-    #define SYS_MOTORS_PORT_PARAM       "MOTORS_PORT"
-    #define SYS_BIOPSY_PORT_PARAM       "BIOPSY_PORT"
+    #define SYS_AWSPORT_PARAM              "AWS_PARAMS"
+    #define SYS_CAN_PROCESS_PARAM          "CAN_PROCESS"
+    #define SYS_GENERATOR_PROCESS_PARAM    "GENERATOR_PROCESS"
+    #define SYS_POWERSERVICE_PROCESS_PARAM "POWER_SERVICE_PROCESS"
+    #define SYS_FILTER_PROCESS_PARAM       "FILTER_PROCESS"
+    #define SYS_COLLIMATOR_PROCESS_PARAM   "COLLIMATOR_PROCESS"
+    #define SYS_COMPRESSOR_PROCESS_PARAM   "COMPRESSOR_PROCESS"
+    #define SYS_POTTER_PROCESS_PARAM       "POTTER_PROCESS"
+    #define SYS_MOTORS_PROCESS_PARAM       "MOTORS_PROCESS"
+    #define SYS_BIOPSY_PROCESS_PARAM       "BIOPSY_PROCESS"
+
+    #define SYS_AWS_IP          0
+    #define SYS_AWS_PORT        1
+
+    #define SYS_PROCESS_NAME    0
+    #define SYS_PROCESS_PARAM   1
+    #define SYS_PROCESS_IP      2
+    #define SYS_PROCESS_PORT    3
+
 
     // your class constructor
     sysConfig():configFile( (const configFile::fileDescriptorT)
         {
             SYS_CONFIG_FILENAME, SYS_REVISION,
             {{
-                { SYS_LOCALHOST_PARAM,          {{ "127.0.0.1" }},   "Address of the localhost used for application"},
-                { SYS_AWSPORT_PARAM,            {{ "10000" }},       "Port for the AWS connection"},
-                { SYS_CAN_PORT_PARAM,           {{ "10001" }},       "Port for Can driver"},
-                { SYS_GENERATOR_PORT_PARAM,     {{ "10002" }},       "Port for generator driver"},
-                { SYS_POWERSERVICE_PORT_PARAM,  {{ "10003" }},       "Port for Power service driver"},
-                { SYS_FILTER_PORT_PARAM,        {{ "10004" }},       "Port for Filter driver"},
-                { SYS_COLLIMATOR_PORT_PARAM,    {{ "10005" }},       "Port for Collimator driver"},
-                { SYS_COMPRESSOR_PORT_PARAM,    {{ "10006" }},       "Port for Compressor driver"},
-                { SYS_POTTER_PORT_PARAM,        {{ "10007" }},       "Port for Potter driver"},
-                { SYS_MOTORS_PORT_PARAM,        {{ "10008" }},       "Port for Motors driver"},
-                { SYS_BIOPSY_PORT_PARAM,        {{ "10009" }},       "Port for Biopsy driver"},
+                { SYS_AWSPORT_PARAM,               {{ "127.0.0.1", "10000" }},       "AWS Connection IP and Port"},
+                { SYS_CAN_PROCESS_PARAM,           {{ "C:\\OEM\\Gantry\\bin\\CanDriver.exe", "-log" , "127.0.0.1", "10001" } },  "CAN Driver process"},
+                { SYS_GENERATOR_PROCESS_PARAM,     {{ "C:\\OEM\\Gantry\\bin\\Generator.exe", "-log" , "127.0.0.1", "10002" } },  "Generator Driver process"},
+                { SYS_POWERSERVICE_PROCESS_PARAM,  {{ "C:\\OEM\\Gantry\\bin\\PowerService.exe", "-log" , "127.0.0.1", "10003" } },  "Power Service Driver process"},
+                { SYS_FILTER_PROCESS_PARAM,        {{ "C:\\OEM\\Gantry\\bin\\Filter.exe", "-log" , "127.0.0.1", "10004" } },  "Filter Driver process"},
+                { SYS_COLLIMATOR_PROCESS_PARAM,    {{ "C:\\OEM\\Gantry\\bin\\Collimator.exe", "-log" , "127.0.0.1", "10005" } },  "Collimator Driver process"},
+                { SYS_COMPRESSOR_PROCESS_PARAM,    {{ "C:\\OEM\\Gantry\\bin\\Compressor.exe", "-log" , "127.0.0.1", "10006" } },  "Compressor Driver process"},
+                { SYS_POTTER_PROCESS_PARAM,        {{ "C:\\OEM\\Gantry\\bin\\Potter.exe", "-log" , "127.0.0.1", "10006" } },  "Potter Driver process"},
+                { SYS_MOTORS_PROCESS_PARAM,        {{ "C:\\OEM\\Gantry\\bin\\Motors.exe", "-log" , "127.0.0.1", "10007" } },  "Motors Driver process"},
+                { SYS_BIOPSY_PROCESS_PARAM,        {{ "C:\\OEM\\Gantry\\bin\\Biopsy.exe", "-log" , "127.0.0.1", "10008" } },  "Biopsy Driver process"},
 
             }}
         })
