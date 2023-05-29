@@ -18,6 +18,10 @@ masterInterface::masterInterface(QString IP, int PORT):QTcpServer()
     serverport = PORT;
     connectionStatus=false;
     socket=0;
+    revision_is_received = false;
+    revision_is_valid = false;
+    pkg_maj_rev = 0;
+    pkg_min_rev = 0;
 
 }
 
@@ -74,6 +78,7 @@ void masterInterface::socketConnected()
 {
     // Connessione avvenuta
     connectionStatus=true;
+    revision_is_received = false;
     revision_is_valid = false;
     socket->setSocketOption(QAbstractSocket::LowDelayOption,1);
     handleServerConnections(connectionStatus);
@@ -88,6 +93,7 @@ void masterInterface::socketConnected()
 void masterInterface::socketDisconnected()
 {
     connectionStatus=false;
+    revision_is_received = false;
     revision_is_valid = false;
     socket->connectToHost(serverip, serverport);
     handleServerConnections(connectionStatus);
@@ -208,7 +214,8 @@ void masterInterface::socketRxData()
 
 
     bool init_find = true;
-    QByteArray streaming = "";
+    QByteArray streaming;
+    streaming.clear();
 
     for(int i=0; i<data.size(); i++){
         if(init_find){
@@ -245,7 +252,7 @@ void masterInterface::txCommand(QString command, QList<QString>* params)
     buffer.append(' ');
     buffer.append(command.toLatin1());
     buffer.append(' ');
-    if(params){
+    if(params != nullptr){
         // Append the data content of the frame
         for(int i =0; i< params->size(); i++){
                 buffer.append(params->at(i).toLatin1());
@@ -261,8 +268,10 @@ void masterInterface::txCommand(QString command, QList<QString>* params)
 
     txseq = loc_txseq++;
     rxack = false;
+
+
     socket->write(buffer);
-    socket->waitForBytesWritten(5000);
+    socket->waitForBytesWritten(100);
 
 
 }
