@@ -1,5 +1,7 @@
 #include "masterInterface.h"
 #include <QTimer>
+#include <QProcess>
+#include <QFile>
 
 /**
  * This is the class constructor.
@@ -275,6 +277,44 @@ void masterInterface::txCommand(QString command, QList<QString>* params)
 
 
 }
+
+bool masterInterface::startDriver(QString program, QString params, QObject* object){
+
+    QStringList arguments;
+    arguments.append(params);
+
+
+    // Test if the process is present
+    QFile programma(program);
+    if(!programma.exists()){
+        qDebug() << "PROCESS: " << program << " doesn't exist";
+        return false;
+    }
+
+    QProcess *   myProcess = new QProcess(object);
+    myProcess->setProgram(program);
+    myProcess->setArguments(arguments);
+
+    // Test if the process is running
+    if (myProcess->state() != QProcess::NotRunning ) {
+        myProcess->terminate();
+        bool result = myProcess->waitForFinished(5000);
+        if(!result) {
+            qDebug() << "PROCESS: " << program << " already running cannot be terminated!";
+            return false;
+        }
+    }
+
+    myProcess->start();
+    bool result = myProcess->waitForStarted(5000);
+    if(!result) {
+        qDebug() << "PROCESS: " << program << " not started!";
+        return false;
+    }
+
+    return true;
+}
+
 
 void masterInterface::handleReceivedEvent(QList<QString>* event_content){
     return;

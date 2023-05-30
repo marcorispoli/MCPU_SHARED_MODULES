@@ -9,6 +9,7 @@
 #include <QAbstractSocket>
 #include <QMutex>
 #include <QWaitCondition>
+#include <QProcess>
 
 /**
  * @brief The masterInterface class definition
@@ -37,6 +38,7 @@ public:
     virtual void handleServerConnections(bool status);
 
 
+    static bool startDriver(QString program, QString params, QObject* object);
 
     _inline bool isConnected(void){ return connectionStatus;};
     _inline bool isAck(void){ return rxack;};
@@ -94,6 +96,8 @@ private:
     QTcpSocket*  socket;
     bool connectionStatus;
     bool connectionAttempt; // E' in corso un tentativo di connessione
+
+
 
     // Protocol data exchange variables
     uint txseq;
