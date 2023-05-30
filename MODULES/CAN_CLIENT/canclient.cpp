@@ -77,7 +77,10 @@ void canClient::socketConnected()
 {
     // Connessione avvenuta
     connectionStatus=true;
-    rx_filter_open = false;
+    if(rx_filter_open){
+        rx_filter_open = false;
+        emit canDriverConnectionStatus(rx_filter_open);
+    }
     socket->setSocketOption(QAbstractSocket::LowDelayOption,1);
 
     // Open the Acceptance filter to the Can Server application
@@ -92,7 +95,10 @@ void canClient::socketConnected()
  */
 void canClient::socketDisconnected()
 {
-    rx_filter_open = false;
+    if(rx_filter_open){
+        rx_filter_open = false;
+        emit canDriverConnectionStatus(rx_filter_open);
+    }
     socket->connectToHost(serverip, serverport);
 
 }
@@ -111,15 +117,20 @@ void canClient::socketError(QAbstractSocket::SocketError error)
     // Invia la comunicazione tempestiva che la comunicazione è interrotta
     if(connectionStatus==true)
     {
-        connectionStatus=false;
-        rx_filter_open = false;
+        connectionStatus=false;            
+        if(rx_filter_open){
+            rx_filter_open = false;
+            emit canDriverConnectionStatus(rx_filter_open);
+        }
+
     }
 
     if(error == QAbstractSocket::RemoteHostClosedError)
-    {
-        // Quest'errore viene generato PRIMA della chiusura
-        // del socket (slot socketDisconnected())
-        rx_filter_open = false;
+    {        
+        if(rx_filter_open){
+            rx_filter_open = false;
+            emit canDriverConnectionStatus(rx_filter_open);
+        }
         return ;
     }
 
@@ -221,6 +232,7 @@ void canClient::handleSocketFrame(QByteArray* data){
         if(address != filter_address) return;
         qDebug() << QString("ACCEPTANCE FILTER OPEN TO: MASK=0x%1, ADDR=0x%2").arg(filter_mask,1,16).arg(filter_address,1,16);
         rx_filter_open = true;
+        emit canDriverConnectionStatus(rx_filter_open);
         return;
 
     }else{

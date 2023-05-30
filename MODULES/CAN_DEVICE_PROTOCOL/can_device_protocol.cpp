@@ -13,7 +13,7 @@
  * @param port_driver the port of the CAN Driver application
  *
  */
-canDeviceProtocol::canDeviceProtocol(uchar devid, const char* ip_driver, const ushort port_driver):canBootloaderProtocol(Application::DEVICE_ID, Application::IP_CAN_ADDRESS, Application::CAN_PORT)
+canDeviceProtocol::canDeviceProtocol(uchar devid, QString ip_driver, const ushort port_driver):canBootloaderProtocol(Application::DEVICE_ID, Application::IP_CAN_ADDRESS, Application::CAN_PORT)
 {
     // Create the Can Client Object to communicate with the can driver process
     deviceID = canDeviceProtocol::CAN_PROTOCOL_DEVICE_BASE_ADDRESS + devid ;
@@ -21,12 +21,14 @@ canDeviceProtocol::canDeviceProtocol(uchar devid, const char* ip_driver, const u
     // Activation of the communicaitone with the CAN DRIVER SERVER
     canClient* pCan = new canClient(0xFFF, deviceID, ip_driver, port_driver);
     connect(pCan, SIGNAL(rxFromCan(ushort , QByteArray )), this, SLOT(rxFromDeviceCan(ushort , QByteArray )), Qt::QueuedConnection);
+    connect(pCan, SIGNAL(canDriverConnectionStatus(bool)), this, SLOT(canDriverConnectionStatus(bool )), Qt::QueuedConnection);
     connect(this,SIGNAL(txToDeviceCan(ushort , QByteArray )), pCan,SLOT(txToCanData(ushort , QByteArray )), Qt::QueuedConnection);
     pCan->ConnectToCanServer();
 
 
     frame_sequence = 1;
     busy = false;
+    canDriverConnected = false;
     connect(&deviceTmo, SIGNAL(timeout()), this, SLOT(deviceTmoEvent()), Qt::UniqueConnection);
 
 

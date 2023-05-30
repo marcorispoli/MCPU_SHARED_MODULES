@@ -132,7 +132,7 @@ public slots:
 
 protected:
     void incomingConnection(qintptr socketDescriptor) override; //!< Incoming connection slot
-    void sendEvent(QString Event, QList<QString>* params);              //!< Helper function to send an EVENT frame to gantry
+    void sendEvent(QString Event, QList<QString>* params = nullptr);              //!< Helper function to send an EVENT frame to gantry
 
 private:
 

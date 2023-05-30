@@ -203,7 +203,7 @@ class canDeviceProtocol: public canBootloaderProtocol
 
 public:
 
-    explicit canDeviceProtocol(uchar devid, const char* ip_driver, const ushort port_driver);
+    explicit canDeviceProtocol(uchar devid, QString ip_driver, const ushort port_driver);
     ~canDeviceProtocol();
 
      static const unsigned short CAN_PROTOCOL_DEVICE_BASE_ADDRESS = 0x200; //!< This is the Point to Point protocol device Base address
@@ -227,15 +227,17 @@ protected:
 
     bool inline isDeviceCommunicationPending(void) {return busy;} //!< Test if the last can rx/tx is still pending
     bool inline isDeviceCommunicationOk(void) {return rxOk;} //!< Test if the last can rx/tx is successfully concluded
+    bool inline isCanConnected(void) {return canDriverConnected;} //!< Test if the CAN server process is connected
 
 private slots:
    void rxFromDeviceCan(ushort canId, QByteArray data);//!< Receive Can data frame from the canDriver
    void deviceTmoEvent(void);         //!< Timer event used for the rx/tx timeout
-
+   void canDriverConnectionStatus(bool status){canDriverConnected = status; }
 
 
 
 private:
+    bool canDriverConnected; //!< THis is the current connection status with the CAN driver process
     ushort deviceID; //!< This is the target device ID
     void receptionEvent(canDeviceProtocolFrame::CAN_FRAME_CONTENT_t* pContent); //!< Function handling a received frame
     uchar frame_sequence;   //!< Frame sequence iterator
