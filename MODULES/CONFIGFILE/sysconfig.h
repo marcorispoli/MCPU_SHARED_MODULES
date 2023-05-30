@@ -27,9 +27,9 @@ class sysConfig : public configFile
     #define SYS_AWS_IP          0
     #define SYS_AWS_PORT        1
 
-    #define SYS_CAN_IP          0
-    #define SYS_CAN_PORT        1
-    #define SYS_CAN_SERVICE     2
+    #define SYS_CAN_IP          2
+    #define SYS_CAN_PORT        3
+    #define SYS_CAN_SERVICE     4
 
     #define SYS_PROCESS_NAME    0
     #define SYS_PROCESS_PARAM   1
