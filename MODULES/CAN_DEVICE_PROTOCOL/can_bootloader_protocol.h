@@ -46,7 +46,7 @@ class canBootloaderProtocol: public QObject
 
 public:
 
-    explicit canBootloaderProtocol(uchar devid, const char* ip_driver, const ushort port_driver);
+    explicit canBootloaderProtocol(uchar devid, QString ip_driver, uint port_driver);
     ~canBootloaderProtocol();
 
      static const unsigned short CAN_BOOTLOADER_DEVICE_BASE_ADDRESS = 0x100; //!< This is the Point to Point bootloader device Base address

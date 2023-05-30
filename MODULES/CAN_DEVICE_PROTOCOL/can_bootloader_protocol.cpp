@@ -13,7 +13,7 @@
  * @param port_driver the port of the CAN Driver application
  *
  */
-canBootloaderProtocol::canBootloaderProtocol(uchar devid, const char* ip_driver, const ushort port_driver)
+canBootloaderProtocol::canBootloaderProtocol(uchar devid, QString ip_driver, uint port_driver)
 {
     // Create the Can Client Object to communicate with the can driver process
     bootloaderID = canBootloaderProtocol::CAN_BOOTLOADER_DEVICE_BASE_ADDRESS + devid ;

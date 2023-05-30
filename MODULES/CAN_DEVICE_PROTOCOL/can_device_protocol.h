@@ -203,7 +203,7 @@ class canDeviceProtocol: public canBootloaderProtocol
 
 public:
 
-    explicit canDeviceProtocol(uchar devid, QString ip_driver, const ushort port_driver);
+    explicit canDeviceProtocol(uchar devid, QString ip_driver, uint port_driver);
     ~canDeviceProtocol();
 
      static const unsigned short CAN_PROTOCOL_DEVICE_BASE_ADDRESS = 0x200; //!< This is the Point to Point protocol device Base address
