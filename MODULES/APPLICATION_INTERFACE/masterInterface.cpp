@@ -14,7 +14,7 @@
  * - IP: this is the IP address of the Can Application Driver;
  * - PORT: this is the port of the Can Application Driver;
  */
-masterInterface::masterInterface(QString IP, int PORT):QTcpServer()
+masterInterface::masterInterface(QString program, QString progpar, QString IP, int PORT):QTcpServer()
 {
     serverip = QHostAddress(IP);
     serverport = PORT;
@@ -24,6 +24,22 @@ masterInterface::masterInterface(QString IP, int PORT):QTcpServer()
     revision_is_valid = false;
     pkg_maj_rev = 0;
     pkg_min_rev = 0;
+
+    // Test if the driver process is present
+    QFile programma(program);
+    if(!programma.exists()){
+        qDebug() << "PROCESS: " << program << " doesn't exist";
+        driverProcess = nullptr;
+    }else{
+
+        // Create the process handler
+        driverProcess = new QProcess(this);
+        driverProcess->setProgram(program);
+        QStringList arguments;
+        arguments.append(progpar);
+        driverProcess->setArguments(arguments);
+
+    }
 
 }
 
@@ -40,6 +56,10 @@ masterInterface::~masterInterface()
         socket->deleteLater();
         socket=0;
         connectionStatus=false;
+    }
+
+    if(driverProcess) {
+        driverProcess->kill();
     }
 }
 
@@ -278,42 +298,28 @@ void masterInterface::txCommand(QString command, QList<QString>* params)
 
 }
 
-bool masterInterface::startDriver(QString program, QString params, QObject* object){
+bool masterInterface::startDriver(void){
 
-    QStringList arguments;
-    arguments.append(params);
+    if(!driverProcess) return false;
+    if(driverProcess->state() != QProcess::NotRunning ) return true;
+    driverProcess->start();
 
-
-    // Test if the process is present
-    QFile programma(program);
-    if(!programma.exists()){
-        qDebug() << "PROCESS: " << program << " doesn't exist";
-        return false;
-    }
-
-    QProcess *   myProcess = new QProcess(object);
-    myProcess->setProgram(program);
-    myProcess->setArguments(arguments);
-
-    // Test if the process is running
-    if (myProcess->state() != QProcess::NotRunning ) {
-        myProcess->terminate();
-        bool result = myProcess->waitForFinished(5000);
-        if(!result) {
-            qDebug() << "PROCESS: " << program << " already running cannot be terminated!";
-            return false;
-        }
-    }
-
-    myProcess->start();
-    bool result = myProcess->waitForStarted(5000);
+    bool result = driverProcess->waitForStarted(5000);
     if(!result) {
-        qDebug() << "PROCESS: " << program << " not started!";
+        qDebug() << "PROCESS: " << progname << " not started!";
         return false;
     }
 
     return true;
 }
+
+void  masterInterface::stopDriver(void){
+
+    if(driverProcess) {
+        driverProcess->kill();
+    }
+}
+
 
 
 void masterInterface::handleReceivedEvent(QList<QString>* event_content){

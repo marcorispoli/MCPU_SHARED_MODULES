@@ -20,7 +20,7 @@ class masterInterface: public QTcpServer
     Q_OBJECT
 
 public:
-    explicit masterInterface(QString IP, int PORT);
+    explicit masterInterface(QString program, QString progpar, QString IP, int PORT);
     ~masterInterface();
 
     // Protocol position definition
@@ -32,13 +32,14 @@ public:
     static const unsigned char EVENT_CMD = 1;
     static const unsigned char EVENT_FIRST_PARAM_CODE = 2;
 
-    void Start(void);
+
     virtual void handleReceivedEvent(QList<QString>* event_content);
     virtual void handleReceivedAck(QList<QString>* ack_content);
     virtual void handleServerConnections(bool status);
 
-
-    static bool startDriver(QString program, QString params, QObject* object);
+    void Start(void); //!< Starts the ethernet connection with the target process
+    bool startDriver(void); //!< Starts the target process
+    void stopDriver(void); //!< Stops the target process
 
     _inline bool isConnected(void){ return connectionStatus;};
     _inline bool isAck(void){ return rxack;};
@@ -97,6 +98,9 @@ private:
     bool connectionStatus;
     bool connectionAttempt; // E' in corso un tentativo di connessione
 
+    QString progname;
+    QString progpar;
+    QProcess * driverProcess;
 
 
     // Protocol data exchange variables

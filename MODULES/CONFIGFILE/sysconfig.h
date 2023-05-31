@@ -43,15 +43,15 @@ class sysConfig : public configFile
             SYS_CONFIG_FILENAME, SYS_REVISION,
             {{
                 { SYS_AWSPORT_PARAM,               {{ "127.0.0.1", "10000" }},       "AWS Connection IP and Port"},
-                { SYS_CAN_PROCESS_PARAM,           {{ "C:\\OEM\\Gantry\\bin\\CanDriver.exe", "-file" , "127.0.0.1", "10001", "10002"} },  "CAN Driver process"},
-                { SYS_GENERATOR_PROCESS_PARAM,     {{ "C:\\OEM\\Gantry\\bin\\Generator.exe", "-file" , "127.0.0.1", "10003" } },  "Generator Driver process"},
-                { SYS_POWERSERVICE_PROCESS_PARAM,  {{ "C:\\OEM\\Gantry\\bin\\PowerService.exe", "-file" , "127.0.0.1", "10004" } },  "Power Service Driver process"},
-                { SYS_FILTER_PROCESS_PARAM,        {{ "C:\\OEM\\Gantry\\bin\\Filter.exe", "-file" , "127.0.0.1", "10005" } },  "Filter Driver process"},
-                { SYS_COLLIMATOR_PROCESS_PARAM,    {{ "C:\\OEM\\Gantry\\bin\\Collimator.exe", "-file" , "127.0.0.1", "10006" } },  "Collimator Driver process"},
-                { SYS_COMPRESSOR_PROCESS_PARAM,    {{ "C:\\OEM\\Gantry\\bin\\Compressor.exe", "-file" , "127.0.0.1", "10007" } },  "Compressor Driver process"},
-                { SYS_POTTER_PROCESS_PARAM,        {{ "C:\\OEM\\Gantry\\bin\\Potter.exe", "-file" , "127.0.0.1", "10008" } },  "Potter Driver process"},
-                { SYS_MOTORS_PROCESS_PARAM,        {{ "C:\\OEM\\Gantry\\bin\\Motors.exe", "-file" , "127.0.0.1", "10009" } },  "Motors Driver process"},
-                { SYS_BIOPSY_PROCESS_PARAM,        {{ "C:\\OEM\\Gantry\\bin\\Biopsy.exe", "-file" , "127.0.0.1", "10010" } },  "Biopsy Driver process"},
+                { SYS_CAN_PROCESS_PARAM,           {{ "C:\\OEM\\Gantry\\bin\\MCPU_CANDRIVER.exe", "-file" , "127.0.0.1", "10001", "10002"} },  "CAN Driver process"},
+                { SYS_POWERSERVICE_PROCESS_PARAM,  {{ "C:\\OEM\\Gantry\\bin\\MCPU_POWERSERVICE.exe", "-file" , "127.0.0.1", "10004" } },  "Power Service Driver process"},
+                { SYS_COMPRESSOR_PROCESS_PARAM,    {{ "C:\\OEM\\Gantry\\bin\\MCPU_COMPRESSOR.exe", "-file" , "127.0.0.1", "10007" } },  "Compressor Driver process"},
+                { SYS_FILTER_PROCESS_PARAM,        {{ "C:\\OEM\\Gantry\\bin\\MCPU_FILTER.exe", "-file" , "127.0.0.1", "10005" } },  "Filter Driver process"},
+                { SYS_COLLIMATOR_PROCESS_PARAM,    {{ "C:\\OEM\\Gantry\\bin\\MCPU_COLLIMATOR.exe", "-file" , "127.0.0.1", "10006" } },  "Collimator Driver process"},
+                { SYS_POTTER_PROCESS_PARAM,        {{ "C:\\OEM\\Gantry\\bin\\MCPU_POTTER.exe", "-file" , "127.0.0.1", "10008" } },  "Potter Driver process"},
+                { SYS_MOTORS_PROCESS_PARAM,        {{ "C:\\OEM\\Gantry\\bin\\MCPU_MOTORS.exe", "-file" , "127.0.0.1", "10009" } },  "Motors Driver process"},
+                { SYS_BIOPSY_PROCESS_PARAM,        {{ "C:\\OEM\\Gantry\\bin\\MCPU_BIOPSY.exe", "-file" , "127.0.0.1", "10010" } },  "Biopsy Driver process"},
+                { SYS_GENERATOR_PROCESS_PARAM,     {{ "C:\\OEM\\Gantry\\bin\\MCPU_GENERATOR.exe", "-file" , "127.0.0.1", "10003" } },  "Generator Driver process"},
 
             }}
         })
