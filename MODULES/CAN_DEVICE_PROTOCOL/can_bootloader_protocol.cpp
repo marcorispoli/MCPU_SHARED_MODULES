@@ -27,6 +27,7 @@ canBootloaderProtocol::canBootloaderProtocol(uchar devid, QString ip_driver, uin
     req_command = 0;
     busy = false;
     connect(&bootloaderTmo, SIGNAL(timeout()), this, SLOT(bootloaderTmoEvent()), Qt::UniqueConnection);
+    board_initialized = false;
 
 }
 
@@ -97,8 +98,25 @@ void canBootloaderProtocol::rxFromBootloader(ushort devId, QByteArray data){
         return;
     }
 
-    // Received a correct protocol frame    
     command_result = data;
+
+    if((uchar) data.at(0) == 0xFF){
+        bootloader_rxcommand =  data.at(1);
+        bootloader_error  =  data.at(2);
+    }else if((uchar) data.at(0) == BOOTLOADER_GET_INFO){
+        bootloader_rxcommand =  data.at(0);
+        bootloader_error = 0;
+        bootloader_present = ((uint8_t) data.at(1) != BOOTLOADER_NOT_PRESENT);
+        bootloader_running = ((uint8_t) data.at(1) == BOOTLOADER_RUNNING);
+        bootloaderMaj = (uint8_t) data.at(2);
+        bootloaderMin = (uint8_t) data.at(3);
+        bootloaderSub = (uint8_t) data.at(4);
+        boardAppMaj = (uint8_t) data.at(5);
+        boardAppMin = (uint8_t) data.at(6);
+        boardAppSub = (uint8_t) data.at(7);
+    }
+
+
     busy = false;
     rxOk = true;
     return;

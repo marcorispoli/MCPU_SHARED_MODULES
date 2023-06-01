@@ -71,11 +71,21 @@ public:
 
      typedef enum{
          BOOTLOADER_NOT_PRESENT = 0,      //!< The bootloader section is not present in the target appication
-         BOOTLOADER_NOT_RUNNING,          //!< The Bootloader is present but not running
          BOOTLOADER_RUNNING,              //!< The bootloader is present and running
+         BOOTLOADER_NOT_RUNNING,          //!< The Bootloader is present but not running
      }CAN_BOOTLOADER_PROCSTAT_t;
 
 
+     inline bool isBoardInitialized(void) { return board_initialized;}
+     inline bool isBootloaderPresent(void){ return bootloader_present;}
+     inline bool isBootloaderRunning(void){ return bootloader_running;}
+     inline uint getBootloaderError(void) { return bootloader_error;}
+     inline uint getBoardAppMaj(void)     { return boardAppMaj;}
+     inline uint getBoardAppMin(void)     { return boardAppMin;}
+     inline uint getBoardAppSub(void)     { return boardAppSub;}
+     inline uint getBootloaderMaj(void)   { return bootloaderMaj;}
+     inline uint getBootloaderMin(void)   { return bootloaderMin;}
+     inline uint getBootloaderSub(void)   { return bootloaderSub;}
 
 
 signals:
@@ -93,20 +103,20 @@ protected:
 
     uint8_t inline bootloaderGetCommandResult(uint8_t index){return command_result.at(index);}
 
-    bool inline isBootloaderCommandError(void){return ((uint8_t) command_result.at(0) == 0xFF);}
-    uint8_t inline bootloaderGetCommandError(void){return command_result.at(2);}
+    // Last error code detected
+    uint bootloader_rxcommand;
+    uint bootloader_error;
 
-    bool inline isBootloaderPresent(void){return ((uint8_t) command_result.at(1) != BOOTLOADER_NOT_PRESENT);}
-    bool inline isBootloaderRunning(void){return ((uint8_t) command_result.at(1) != BOOTLOADER_RUNNING);}
-
-    uint8_t inline bootloaderGetAppRevMaj(void){return (uint8_t) command_result.at(5);}
-    uint8_t inline bootloaderGetAppRevMin(void){return (uint8_t) command_result.at(6);}
-    uint8_t inline bootloaderGetAppRevSub(void){return (uint8_t) command_result.at(7);}
-    uint8_t inline bootloaderGetBootRevMaj(void){return (uint8_t) command_result.at(2);}
-    uint8_t inline bootloaderGetBootRevMin(void){return (uint8_t) command_result.at(3);}
-    uint8_t inline bootloaderGetBootRevSub(void){return (uint8_t) command_result.at(4);}
-
-
+    // Bootloader Initialization data
+    bool board_initialized;
+    bool bootloader_present;
+    bool bootloader_running;
+    uint boardAppMaj;
+    uint boardAppMin;
+    uint boardAppSub;
+    uint bootloaderMaj;
+    uint bootloaderMin;
+    uint bootloaderSub;
 
 private slots:
    void rxFromBootloader(ushort canId, QByteArray data);//!< Receive Can data frame from the canDriver  
@@ -118,11 +128,10 @@ protected slots:
 private:
     ushort bootloaderID; //!< This is the target device ID
 
-
     bool  busy;             //!< Busy flag waiting for the Device answer
     bool  rxOk;             //!< The Frame has been correctly received
     unsigned char req_command;  //!< Last requested command
-    QByteArray    command_result;
+
 
     struct{
         uchar tmo:1;
@@ -133,10 +142,12 @@ private:
         uchar frame_code:1;
         uchar spare:2;
     }frameError;            //!< In case of error frame, this is the error cause
+    QByteArray    command_result;
 
     QTimer bootloaderTmo;
+    bool  sendCommand(canBootloaderProtocol::CAN_BOOTLOADER_COMMANDS_t cmd, uchar d0, uchar d1, uchar d2, uchar d3, uchar d4, uchar d5, uchar d6);
 
-     bool  sendCommand(canBootloaderProtocol::CAN_BOOTLOADER_COMMANDS_t cmd, uchar d0, uchar d1, uchar d2, uchar d3, uchar d4, uchar d5, uchar d6);
+
 };
 
 
