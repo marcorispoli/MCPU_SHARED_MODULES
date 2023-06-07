@@ -134,6 +134,7 @@ public:
 
 signals:
     void rxFromCan(ushort canId, QByteArray data);
+    void rxAsyncFromCan(ushort canId, QByteArray data);
     void canDriverConnectionStatus(bool status);
 
 public slots:

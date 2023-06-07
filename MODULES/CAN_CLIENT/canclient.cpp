@@ -198,6 +198,7 @@ void canClient::handleSocketFrame(QByteArray* data){
 
     QByteArray frame;
     bool is_register;
+    bool is_asynch;
     bool is_valid;
     int i;
     bool data_ok;
@@ -208,6 +209,7 @@ void canClient::handleSocketFrame(QByteArray* data){
         if(data->at(i)== ' ') continue;
         if(data->at(i)== 'F') {
             is_register = true;
+            is_asynch = false;
             is_valid = true;
             i++;
             break;
@@ -215,6 +217,15 @@ void canClient::handleSocketFrame(QByteArray* data){
 
         if(data->at(i)== 'D') {
             is_register = false;
+            is_asynch = false;
+            is_valid = true;
+            i++;
+            break;
+        }
+
+        if(data->at(i)== 'A') {
+            is_register = false;
+            is_asynch = true;
             is_valid = true;
             i++;
             break;
@@ -253,7 +264,8 @@ void canClient::handleSocketFrame(QByteArray* data){
         // If a valid set of data has been identified they will be sent to the driver
         //ushort devId = (canid & (~filter_mask) );
         if(frame.size()) {
-            emit rxFromCan(canid,frame);
+            if(is_asynch) emit rxAsyncFromCan(canid,frame);
+            else emit rxFromCan(canid,frame);
         }
     }
     return;
