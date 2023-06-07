@@ -14,12 +14,15 @@
  * - IP: this is the IP address of the Can Application Driver;
  * - PORT: this is the port of the Can Application Driver;
  */
-masterInterface::masterInterface(QString program, QString progpar, QString IP, int PORT):QTcpServer()
+masterInterface::masterInterface(QString debugName, QString program, QString progpar, QString IP, int PORT):QTcpServer()
 {
+    debugProcessName = debugName;
     serverip = QHostAddress(IP);
     serverport = PORT;
     connectionStatus=false;
     socket=0;
+    boardInitialized = false;
+    board_revision_is_valid = false;;
     revision_is_received = false;
     revision_is_valid = false;
     pkg_maj_rev = 0;
@@ -213,10 +216,10 @@ void masterInterface::handleSocketFrame(QByteArray* data){
 
          ackparam = frame_content;
          rxack = true;
-         handleReceivedAck(&frame_content);
+         handleLibReceivedAck(&frame_content);
          return;
     }else if(frame_content.at(0) == "E") {
-        handleReceivedEvent(&frame_content);
+        handleLibReceivedEvent(&frame_content);
         return;
     }
 
@@ -322,7 +325,59 @@ void  masterInterface::stopDriver(void){
 
 
 
+void masterInterface::handleLibReceivedEvent(QList<QString>* event_content){
+    if(event_content->at(EVENT_CMD) == EVENT_INIT_COMPLETED){
+        if(event_content->size() != EVENT_INIT_COMPLETED_LEN) return;
+
+        boardInitialized = true;
+        bootloader_error = event_content->at(EVENT_FIRST_PARAM_CODE).toUInt();
+        bootloader_present = event_content->at(EVENT_FIRST_PARAM_CODE+1).toUInt();
+        bootloader_running = event_content->at(EVENT_FIRST_PARAM_CODE+2).toUInt();
+        boardAppMaj = event_content->at(EVENT_FIRST_PARAM_CODE+3).toUInt();
+        boardAppMin = event_content->at(EVENT_FIRST_PARAM_CODE+4).toUInt();
+        boardAppSub = event_content->at(EVENT_FIRST_PARAM_CODE+5).toUInt();
+        bootloaderMaj = event_content->at(EVENT_FIRST_PARAM_CODE+6).toUInt();
+        bootloaderMin = event_content->at(EVENT_FIRST_PARAM_CODE+7).toUInt();
+        bootloaderSub = event_content->at(EVENT_FIRST_PARAM_CODE+8).toUInt();
+
+        if(bootloader_error) qDebug() << "POWERSERVICE BOARD STATUS: BOOTLOADER ERROR " << bootloader_error;
+        else{
+            qDebug() << debugProcessName  << " BOARD STATUS: BOOTPRESENT->" << bootloader_present \
+                     << " BOOTRUN->" << bootloader_running \
+                     << " BOOTREV->" << bootloaderMaj <<"."<<bootloaderMin<<"."<<bootloaderSub \
+                     << " APPREV->" << boardAppMaj <<"."<<boardAppMin<<"."<<boardAppSub ;
+        }
+
+        return;
+    }
+
+    handleReceivedEvent(event_content);
+    return;
+}
+
 void masterInterface::handleReceivedEvent(QList<QString>* event_content){
+
+    return;
+}
+
+void masterInterface::handleLibReceivedAck(QList<QString>* ack_content){
+    if(ack_content->at(ACK_CMD_CODE) == GET_REVISION){
+
+        if(ack_content->size() != GET_REVISION_LEN) return;
+        setRevision(ack_content->at(ACK_FIRST_PARAM_CODE).toUInt(), ack_content->at(ACK_FIRST_PARAM_CODE+1).toUInt(), ack_content->at(ACK_FIRST_PARAM_CODE+2).toUInt());
+        qDebug() << debugProcessName  <<  " REVISION: " << maj_rev << "." << min_rev << "." << sub_rev;
+        return;
+    }
+
+    if(ack_content->at(ACK_CMD_CODE) == BOARD_INIT){
+
+        if(ack_content->size() != BOARD_INIT_LEN) return;
+        qDebug() << debugProcessName  << " BOARD INIT ACK";
+        return;
+    }
+
+    // If no lib management are performed proceeds with the module management
+    handleReceivedAck(ack_content);
     return;
 }
 
