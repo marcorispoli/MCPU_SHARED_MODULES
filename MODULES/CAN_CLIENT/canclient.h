@@ -125,7 +125,7 @@ class canClient: public QTcpServer
     Q_OBJECT
 
 public:
-    explicit canClient(ushort can_mask, ushort can_address, QString IP, int PORT);
+    explicit canClient(ushort can_rx_address, QString IP, int PORT);
     ~canClient();
 
 
@@ -157,9 +157,8 @@ private:
     quint16      serverport;    // Port of the remote server
     QTcpSocket*  socket;
 
-    ushort filter_mask;         //!< The CAN Acceptance Filter Mask
-    ushort filter_address;      //!< The CAN Acceptance Filter Address
-    bool rx_filter_open;        //!< The Acceptance filter has been set
+    ushort  rxCanId;             //!< The CAN Rx Acceptance Filter
+    bool    rx_filter_open;        //!< The Acceptance filter has been set
 
     void clientConnect();       // Try to connect the remote server    
 

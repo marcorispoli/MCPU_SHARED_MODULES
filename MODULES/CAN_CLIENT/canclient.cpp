@@ -12,12 +12,11 @@
  * - IP: this is the IP address of the Can Application Driver;
  * - PORT: this is the port of the Can Application Driver;
  */
-canClient::canClient(ushort can_mask, ushort can_address, QString IP, int PORT):QTcpServer()
+canClient::canClient(ushort can_rx_address, QString IP, int PORT):QTcpServer()
 {
     serverip = QHostAddress(IP);
     serverport = PORT;
-    filter_mask = can_mask;
-    filter_address = can_address;
+    rxCanId = can_rx_address;
     rx_filter_open = false;
     connectionStatus=false;
     socket=0;
@@ -233,15 +232,13 @@ void canClient::handleSocketFrame(QByteArray* data){
     }
     if(!is_valid) return;
 
-    ushort mask, address;
+    ushort address;
     if(is_register){// Can Registering Frame: set the reception mask and address
-        mask = getItem(&i, data, &data_ok);
-        if(!data_ok) return;
         address = getItem(&i, data, &data_ok);
-        if(!data_ok) return;
-        if(mask != filter_mask) return;
-        if(address != filter_address) return;
-        qDebug() << QString("ACCEPTANCE FILTER OPEN TO: MASK=0x%1, ADDR=0x%2").arg(filter_mask,1,16).arg(filter_address,1,16);
+        if(!data_ok) return;       
+        if(address != rxCanId) return;
+
+        qDebug() << QString("ACCEPTANCE FILTER OPEN TO ADDR=0x%1").arg(rxCanId,1,16);
         rx_filter_open = true;
         emit canDriverConnectionStatus(rx_filter_open);
         return;
@@ -351,7 +348,7 @@ void canClient::setAcceptanceFilter()
     if(!connectionStatus) return;
     if(rx_filter_open) return;
 
-    QString frame = QString("<F %1 %2>").arg(filter_mask).arg(filter_address);
+    QString frame = QString("<F %1 >").arg(rxCanId);
     socket->write(frame.toLatin1());
     socket->waitForBytesWritten(5000);
 
