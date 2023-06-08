@@ -19,7 +19,7 @@ canDeviceProtocol::canDeviceProtocol(uchar devid, QString ip_driver, uint port_d
     deviceID = canDeviceProtocol::CAN_PROTOCOL_DEVICE_BASE_ADDRESS + devid ;
 
     // Activation of the communicaitone with the CAN DRIVER SERVER
-    canClient* pCan = new canClient(0xFFF, deviceID, ip_driver, port_driver);
+    canClient* pCan = new canClient(canDeviceProtocol::CAN_PROTOCOL_DEVICE_BASE_ADDRESS + deviceID, ip_driver, port_driver);
     connect(pCan, SIGNAL(rxFromCan(ushort , QByteArray )), this, SLOT(rxFromDeviceCan(ushort , QByteArray )), Qt::QueuedConnection);
     connect(pCan, SIGNAL(canDriverConnectionStatus(bool)), this, SLOT(canDriverConnectionStatus(bool )), Qt::QueuedConnection);
     connect(this,SIGNAL(txToDeviceCan(ushort , QByteArray )), pCan,SLOT(txToCanData(ushort , QByteArray )), Qt::QueuedConnection);

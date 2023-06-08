@@ -19,7 +19,7 @@ canBootloaderProtocol::canBootloaderProtocol(uchar devid, QString ip_driver, uin
     bootloaderID = canBootloaderProtocol::CAN_BOOTLOADER_DEVICE_BASE_ADDRESS + devid ;
 
     // Activation of the communicaitone with the CAN DRIVER SERVER
-    canClient* pBoot = new canClient(0xFFF, bootloaderID, ip_driver, port_driver);
+    canClient* pBoot = new canClient(canDeviceProtocol::CAN_BOOTLOADER_DEVICE_BASE_ADDRESS + bootloaderID, ip_driver, port_driver);
     connect(pBoot, SIGNAL(rxFromCan(ushort , QByteArray )), this, SLOT(rxFromBootloader(ushort , QByteArray )), Qt::QueuedConnection);
     connect(this,SIGNAL(txToBootloader(ushort , QByteArray )), pBoot,SLOT(txToCanData(ushort , QByteArray )), Qt::QueuedConnection);
     pBoot->ConnectToCanServer();

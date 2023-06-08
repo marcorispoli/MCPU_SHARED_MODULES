@@ -206,7 +206,7 @@ public:
     explicit canDeviceProtocol(uchar devid, QString ip_driver, uint port_driver);
     ~canDeviceProtocol();
 
-     static const unsigned short CAN_PROTOCOL_DEVICE_BASE_ADDRESS = 0x200; //!< This is the Point to Point protocol device Base address
+     static const unsigned short CAN_PROTOCOL_DEVICE_BASE_ADDRESS = 0x140; //!< This is the Point to Point protocol device Base address
      static const unsigned short CAN_RXTX_TMO = 100; //!< This defines the maximum reception waiting time in ms
 
 signals:
