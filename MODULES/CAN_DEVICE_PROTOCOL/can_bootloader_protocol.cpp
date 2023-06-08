@@ -16,10 +16,10 @@
 canBootloaderProtocol::canBootloaderProtocol(uchar devid, QString ip_driver, uint port_driver)
 {
     // Create the Can Client Object to communicate with the can driver process
-    bootloaderID = canBootloaderProtocol::CAN_BOOTLOADER_DEVICE_BASE_ADDRESS + devid ;
+    bootId =  devid ;
 
     // Activation of the communicaitone with the CAN DRIVER SERVER
-    canClient* pBoot = new canClient(canDeviceProtocol::CAN_BOOTLOADER_DEVICE_BASE_ADDRESS + bootloaderID, ip_driver, port_driver);
+    canClient* pBoot = new canClient(canDeviceProtocol::CAN_BOOTLOADER_DEVICE_BASE_ADDRESS + bootId, ip_driver, port_driver);
     connect(pBoot, SIGNAL(rxFromCan(ushort , QByteArray )), this, SLOT(rxFromBootloader(ushort , QByteArray )), Qt::QueuedConnection);
     connect(this,SIGNAL(txToBootloader(ushort , QByteArray )), pBoot,SLOT(txToCanData(ushort , QByteArray )), Qt::QueuedConnection);
     pBoot->ConnectToCanServer();
@@ -52,8 +52,8 @@ canBootloaderProtocol::~canBootloaderProtocol()
  * @param devId received device ID
  * @param data CAN data frame to be processed
  */
-void canBootloaderProtocol::rxFromBootloader(ushort devId, QByteArray data){
-    emit dataReceivedFromBootloaderCan(devId,data); // For debug
+void canBootloaderProtocol::rxFromBootloader(ushort canId, QByteArray data){
+    emit dataReceivedFromBootloaderCan(canId,data); // For debug
 
     // No pending reception
     if(!busy) return;
@@ -62,7 +62,7 @@ void canBootloaderProtocol::rxFromBootloader(ushort devId, QByteArray data){
     bootloaderTmo.stop();
 
     // Timeout signaled by the client
-    if(devId==0){
+    if(canId==0){
         busy = false;
         rxOk = false;
         frameError.tmo = 1;
@@ -70,7 +70,7 @@ void canBootloaderProtocol::rxFromBootloader(ushort devId, QByteArray data){
     }
 
     // Device ID not matching the expected
-    if(devId != bootloaderID) {
+    if((canId & 0x3F) != bootId) {
         busy = false;
         rxOk = false;
         frameError.id = 1;
@@ -164,7 +164,7 @@ bool  canBootloaderProtocol::sendCommand(canBootloaderProtocol::CAN_BOOTLOADER_C
     rxOk = false;
     req_command = cmd;
 
-    emit txToBootloader( bootloaderID, frame);
+    emit txToBootloader( bootId + canBootloaderProtocol::CAN_BOOTLOADER_DEVICE_BASE_ADDRESS , frame);
     bootloaderTmo.start(5000);
     return true;
 }

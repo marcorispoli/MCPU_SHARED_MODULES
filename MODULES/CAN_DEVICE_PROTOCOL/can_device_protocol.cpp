@@ -16,10 +16,10 @@
 canDeviceProtocol::canDeviceProtocol(uchar devid, QString ip_driver, uint port_driver):canBootloaderProtocol(devid, ip_driver, port_driver)
 {
     // Create the Can Client Object to communicate with the can driver process
-    deviceID = canDeviceProtocol::CAN_PROTOCOL_DEVICE_BASE_ADDRESS + devid ;
+    devId = devid ;
 
     // Activation of the communicaitone with the CAN DRIVER SERVER
-    canClient* pCan = new canClient(canDeviceProtocol::CAN_PROTOCOL_DEVICE_BASE_ADDRESS + deviceID, ip_driver, port_driver);
+    canClient* pCan = new canClient(canDeviceProtocol::CAN_PROTOCOL_DEVICE_BASE_ADDRESS + devId, ip_driver, port_driver);
     connect(pCan, SIGNAL(rxFromCan(ushort , QByteArray )), this, SLOT(rxFromDeviceCan(ushort , QByteArray )), Qt::QueuedConnection);
     connect(pCan, SIGNAL(canDriverConnectionStatus(bool)), this, SLOT(canDriverConnectionStatus(bool )), Qt::QueuedConnection);
     connect(this,SIGNAL(txToDeviceCan(ushort , QByteArray )), pCan,SLOT(txToCanData(ushort , QByteArray )), Qt::QueuedConnection);
@@ -68,7 +68,7 @@ QString canDeviceProtocol::getDeviceFrameErrorStr(void){
  * @param devId received device ID
  * @param data CAN data frame to be processed
  */
-void canDeviceProtocol::rxFromDeviceCan(ushort devId, QByteArray data){
+void canDeviceProtocol::rxFromDeviceCan(ushort canId, QByteArray data){
     emit dataReceivedFromDeviceCan(devId,data); // For debug
 
     // No pending reception
@@ -86,7 +86,7 @@ void canDeviceProtocol::rxFromDeviceCan(ushort devId, QByteArray data){
     }
 
     // Device ID not matching the expected
-    if(devId != deviceID) {
+    if(devId != (canId & 0x3F)) {
         busy = false;
         rxOk = false;
         frameError.id = 1;
@@ -172,7 +172,7 @@ bool  canDeviceProtocol::deviceAccessRegister(canDeviceProtocolFrame::CAN_FRAME_
     (*(uchar*) &frameError) = 0;
 
 
-    emit txToDeviceCan(deviceID, canDeviceProtocolFrame::toCanData(&content));
+    emit txToDeviceCan(devId + canDeviceProtocol::CAN_PROTOCOL_DEVICE_BASE_ADDRESS, canDeviceProtocolFrame::toCanData(&content));
     deviceTmo.stop();
     return true;
 }

@@ -238,7 +238,7 @@ private slots:
 
 private:
     bool canDriverConnected; //!< THis is the current connection status with the CAN driver process
-    ushort deviceID; //!< This is the target device ID
+    ushort devId;      //!< This is the
     void receptionEvent(canDeviceProtocolFrame::CAN_FRAME_CONTENT_t* pContent); //!< Function handling a received frame
     uchar frame_sequence;   //!< Frame sequence iterator
     bool  busy;             //!< Busy flag waiting for the Device answer

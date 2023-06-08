@@ -126,7 +126,7 @@ protected slots:
 
 
 private:
-    ushort bootloaderID; //!< This is the target device ID
+    ushort bootId; //!< This is the target device ID
 
     bool  busy;             //!< Busy flag waiting for the Device answer
     bool  rxOk;             //!< The Frame has been correctly received
