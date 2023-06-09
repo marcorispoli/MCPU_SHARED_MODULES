@@ -23,6 +23,7 @@ class sysConfig : public configFile
     #define SYS_POTTER_PROCESS_PARAM       "POTTER_PROCESS"
     #define SYS_MOTORS_PROCESS_PARAM       "MOTORS_PROCESS"
     #define SYS_BIOPSY_PROCESS_PARAM       "BIOPSY_PROCESS"
+    #define SYS_LANGUAGE_PARAM             "SYSTEM_LANGUAGE"
 
     #define SYS_AWS_IP          0
     #define SYS_AWS_PORT        1
@@ -38,7 +39,7 @@ class sysConfig : public configFile
 
 
     // your class constructor
-    sysConfig():configFile( (const configFile::fileDescriptorT)
+    sysConfig(configFile::_cfg_open_mode_t open_mode):configFile( (const configFile::fileDescriptorT)
         {
             SYS_CONFIG_FILENAME, SYS_REVISION,
             {{
@@ -52,9 +53,10 @@ class sysConfig : public configFile
                 { SYS_MOTORS_PROCESS_PARAM,        {{ "C:\\OEM\\Gantry\\bin\\MCPU_MOTORS.exe", "-file" , "127.0.0.1", "10009" } },  "Motors Driver process"},
                 { SYS_BIOPSY_PROCESS_PARAM,        {{ "C:\\OEM\\Gantry\\bin\\MCPU_BIOPSY.exe", "-file" , "127.0.0.1", "10010" } },  "Biopsy Driver process"},
                 { SYS_GENERATOR_PROCESS_PARAM,     {{ "C:\\OEM\\Gantry\\bin\\MCPU_GENERATOR.exe", "-file" , "127.0.0.1", "10003" } },  "Generator Driver process"},
+                { SYS_LANGUAGE_PARAM,              {{ "C:\\OEM\\Gantry\\Language","ITA" } },  "Language tranlation path and current selected"},
 
             }}
-        })
+        }, open_mode)
     {
         // Your constructor code ...
         this->loadFile();

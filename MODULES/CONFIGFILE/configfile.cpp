@@ -1,9 +1,9 @@
 #include "configfile.h"
 
-configFile::configFile(const fileDescriptorT descriptor)
+configFile::configFile(const fileDescriptorT descriptor, _cfg_open_mode_t open_mode)
 {
     fileDescriptor = descriptor;
-
+    openMode = open_mode;
     fp = new QFile(descriptor.filename);
     if(!fp->exists()) createDefaultFile();
 
@@ -93,6 +93,13 @@ void configFile::loadFile(void){
 
     // Copy the loaded content to a backup copy for further restore
     backup_content = content;
+
+    if((openMode == _CFG_READONLY) && ((file_revision != fileDescriptor.revision) ||(!format_ok))){
+        qDebug() << "WRONG CONFIGURATION REVISION OR FORMAT";
+        format_ok = false;
+        return;
+    }
+    format_ok = true;
 
     // Handles the change revision callback
     if(file_revision != fileDescriptor.revision){

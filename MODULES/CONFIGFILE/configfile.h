@@ -189,6 +189,11 @@ public:
 
     #define _CFGDEF(x) {{x}}
 
+    typedef enum{
+        _CFG_READONLY = 0,
+        _CFG_READWRITE
+    }_cfg_open_mode_t;
+
     //!> Parameter value definition structure
     typedef struct{
         QList<QString> data;
@@ -225,7 +230,7 @@ public:
      * This is the descriptor structure of the configuration file
      *
      */
-    configFile( const fileDescriptorT descriptor);
+    configFile( const fileDescriptorT descriptor, _cfg_open_mode_t open_mode = _CFG_READWRITE);
 
     //! Load the configuration file in memory
     void loadFile(void);
@@ -340,6 +345,8 @@ public:
 
 private:
     QFile* fp; //!< file handle
+    _cfg_open_mode_t openMode; //!< Read and write opening mode
+    bool format_ok; //!< The configuration file has been correctly uploaded
 
     paramItemContentT content; //!< config file content in memory
     paramItemContentT backup_content;//!< backup of the content before any modification
