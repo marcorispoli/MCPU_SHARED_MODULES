@@ -343,6 +343,8 @@ public:
         return true;
     }
 
+    bool inline isFormatCorrect(void){return format_ok;}
+
 private:
     QFile* fp; //!< file handle
     _cfg_open_mode_t openMode; //!< Read and write opening mode
