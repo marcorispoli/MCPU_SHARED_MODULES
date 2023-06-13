@@ -238,9 +238,6 @@ public:
     //! Stores the memory content of the configuration file into the file.
     void storeFile(void);
 
-    //! Restores the memory content to the one just after the file loading
-    _inline void restoreContent(void){ content = backup_content; }
-
     //! Override thecurrent file with the default values
     _inline void setDefaultFile(void){ createDefaultFile(); }
 
@@ -325,33 +322,17 @@ public:
         return ;
     }
 
-    /**
-     * @brief revisionChangeCallback
-     * This callback is called whenever a file config results of different revision than expected.
-     *
-     * Reimplement this function in order to handle the differences
-     * @param filerev
-     * The file revision
-     * @param rev
-     * The expected revision
-     * @return
-     * Return true from this callback to allow the class to store the
-     * file with the updated content.
-     */
-    virtual bool revisionChangeCallback(int filerev, int rev){
-
-        return true;
-    }
 
     bool inline isFormatCorrect(void){return format_ok;}
+    bool inline isFormatDefault(void){return format_default;}
 
 private:
     QFile* fp; //!< file handle
     _cfg_open_mode_t openMode; //!< Read and write opening mode
     bool format_ok; //!< The configuration file has been correctly uploaded
+    bool format_default; //!< Set to TRUE in case the file is with default values
 
     paramItemContentT content; //!< config file content in memory
-    paramItemContentT backup_content;//!< backup of the content before any modification
     fileDescriptorT fileDescriptor; //!< descriptor of the internal file params structure
     bool dataAccess; //!< result of the last data access
 
